@@ -1,0 +1,7 @@
+# atom ide mac os x apio icetools verilog #
+.DS_Store
+.sconsign.dblite
+hardware.asc
+hardware.bin
+hardware.blif
+hardware.out

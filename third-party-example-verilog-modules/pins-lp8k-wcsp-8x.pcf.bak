@@ -1,0 +1,94 @@
+###############################################################################
+#
+# TinyFPGA BX constraint file (.pcf)
+#
+###############################################################################
+#
+# Copyright (c) 2018, Luke Valenty
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are those
+# of the authors and should not be interpreted as representing official policies,
+# either expressed or implied, of the <project name> project.
+#
+###############################################################################
+
+####
+# TinyFPGA BX information: https://github.com/tinyfpga/TinyFPGA-BX/
+####
+
+# Left side of board
+set_io --warn-no-port fifo_txe   A2    # SAMPLECLK # PIN_1
+set_io --warn-no-port fifo_wri   A1    # SAMPLECLK8X # PIN_2
+set_io --warn-no-port RST        B1    # RST
+set_io --warn-no-port data_in[0] C2   # was LED_ALT
+set_io --warn-no-port data_in[1] C1   # PIN_5
+set_io --warn-no-port data_in[2] D2   # PIN_6 ...
+set_io --warn-no-port data_in[3] D1
+set_io --warn-no-port data_in[4] E2
+set_io --warn-no-port data_in[5] E1
+set_io --warn-no-port data_in[6] G2
+set_io --warn-no-port data_in[7] H1
+set_io --warn-no-port adc_encode J1   # ... PIN_12
+set_io --warn-no-port trig_in H2      # PIN_13
+
+# Right side of board
+set_io --warn-no-port read_mem_in H9   # PIN_14 # read_mem_in
+set_io --warn-no-port capt_done   D9   # PIN_15
+set_io --warn-no-port PIN_16      D8   # clk_lock # PIN_16
+set_io --warn-no-port data_out[0] C9   # PIN_17 ...
+set_io --warn-no-port data_out[1] A9
+set_io --warn-no-port data_out[2] B8
+set_io --warn-no-port data_out[3] A8
+set_io --warn-no-port data_out[4] B7
+set_io --warn-no-port data_out[5] A7
+set_io --warn-no-port data_out[6] B6   # ... PIN_23
+set_io --warn-no-port data_out[7] A6   # PIN_24
+
+# SPI flash interface on bottom of board
+set_io --warn-no-port SPI_SS F7        # BX: pulled up to 3.3V via 10k
+set_io --warn-no-port SPI_SCK G7       # BX: yes SCK
+set_io --warn-no-port SPI_IO0 G6       # BX: SDO (also tied to H5/CBSEL1 on BX board)
+set_io --warn-no-port SPI_IO1 H7       # BX: SDI
+set_io --warn-no-port SPI_IO2 H4       # BX: !WP for SPI Chip, pulled high via 10k
+set_io --warn-no-port SPI_IO3 J8       # BX: !HOLD for SPI Chip, pulled high via 10k
+
+# General purpose pins on bottom of board
+set_io --warn-no-port PIN_25 G1
+set_io --warn-no-port PIN_26 J3
+set_io --warn-no-port PIN_27 J4
+set_io --warn-no-port PIN_28 G9
+set_io --warn-no-port PIN_29 J9
+set_io --warn-no-port PIN_30 E8
+set_io --warn-no-port PIN_31 J2
+
+# LED
+set_io --warn-no-port PIN_LED B3       # LED
+
+# USB
+set_io --warn-no-port USBP B4
+set_io --warn-no-port USBN A4
+set_io --warn-no-port USBPU A3
+
+# 16MHz clock
+set_io --warn-no-port CLK B2 # input

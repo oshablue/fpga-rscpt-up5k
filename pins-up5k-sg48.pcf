@@ -1,0 +1,184 @@
+###############################################################################
+#
+# UP5K constraint file (.pcf)
+# iCE40-UP5K as implemented on:
+# e.g. Lattice UltraPlus Breakout Board iCE40UP5K-B-EVN
+#
+# See: Pinout datasheet (from Lattice website - see xlsx pinout for specific)
+# See: PDF for package-pin mapping
+# See: iCE40 Family DataSheet has the pin types and dual function and global
+# net information in the Pinout Information section
+#
+###############################################################################
+#
+# Adapted from material copyrighted by Lattice Semi and associated
+# third party developers, as shown in the third-party-example-verilog-modules
+# directory.
+#
+# Implementation here:
+# Copyright (c) 2019, Nisch S. / OshaBlue LLC
+# For: OshaBlue HDL-0108-RSCPT Ultrasound 8-Channel NDT R&D Hardware
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are those
+# of the authors and should not be interpreted as representing official policies,
+# either expressed or implied, of the <project name> project.
+#
+###############################################################################
+
+#
+# SG48 Package: for UltraPlus
+# From Pin 1 designation:
+# LHS: Pins 1 - 12
+# Bottom: Pins 13 - 24
+# RHS: Pins 25 - 36
+# Top: Pins 37 - 48 (going right to left of course)
+# PIOT_xx means "Top" and these are Bank 0
+# PIOB_xx means "Bottom" and these are:
+#         xx <= 9: Bank 2
+#         xx > 9:  Bank 1
+# RGBs are Bank O
+# IOT/B_Gx means one of 6 global input buses, if that is selected as a function
+#          such as clock input, reset net etc.
+
+#
+# Caution: These pin names/mappings have not been double-checked yet!!!
+#
+
+
+#
+# Implementation:
+# Bank2: 8-bits data capture data_in[] real pin#s: 44-48, 2-4
+# Bank0: IO pins within real pin #s: 26 - 36 for data_out[] and comms out
+#        control incl rxd / txd (real pin#s 23 - 25)
+# Reset should go to a global net - use: G1 or G3 available
+# Clock In (16MHz) should go to a global net - use: G1 or G3 available
+# The Lattice Dev Kit for UP5K datasheet: Nice part in schematic showing
+# the organization of the pinout for bank and layout purposes.
+# Also see the ADC and comm FTDI chip pinouts for bit organization and pin maps
+# Although yes of course pins can be remapped (mostly so here) for routing purposes
+
+#//
+##//#define BUILD_FOR_UP5KBREAKOUT
+#// See up5kbreakout-test version of pcf file for implemented ifdefs below already set
+
+
+#######################
+# LHS Pins 1 - 12
+#
+#set_io --warn-no-port VCCIO_2         1
+set_io --warn-no-port data_in[5]      2     #IOB_6a          2
+set_io --warn-no-port data_in[6]      3     #IOB_9b          3     # Diff: COMP of IOB_8a
+set_io --warn-no-port data_in[7]      4     #IOB_8a          4     # Diff: TRUE of IOB_9b
+#set_io --warn-no-port VCC             5
+set_io --warn-no-port adc_encode      6     #IOB_13b         6     # Diff: COMP of IOB_12a
+set_io --warn-no-port CDONE           7
+#set_io --warn-no-port CRESET_B        8     # CRESET_B is always only itself
+set_io --warn-no-port PULSE_NEG 9 #IOB_16a         9     # MCU_CTRL_PULSE_NEG
+set_io --warn-no-port RTZ_NEG 10 #IOB_18a         10    # MCU_CTRL_RTZ_NEG in R01 A1 HDL-0108-RSCPT
+set_io --warn-no-port RTZ_POS 11 #IOB_20a         11    # MCU_CTRL_RTZ_POS in R01 A1 HDL-0108-RSCPT
+set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
+
+
+
+
+#######################
+# Bottom: Pins 13 - 24
+#
+set_io --warn-no-port IOB_24a         13    # Diff: TRUE of IOB_25b
+set_io --warn-no-port IOB_32a_SPI_SDO 14
+set_io --warn-no-port IOB_34a_SPI_SCK 15
+set_io --warn-no-port IOB_35b_SPI_SS  16
+set_io --warn-no-port IOB_33b_SPI_SDI 17
+set_io --warn-no-port IOB_31b         18
+set_io --warn-no-port IOB_29b         19
+
+# TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
+#//#ifndef BUILD_FOR_UP5KBREAKOUT
+set_io --warn-no-port CLK             20    #IOB_25b_G3      20    # G3 / Diff: COMP of IOB_24a
+#//#else
+#set_io --warn-no-port IOB_25b_G3      20
+#//#endif
+
+# TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
+#//#ifndef BUILD_FOR_UP5KBREAKOUT
+set_io --warn-no-port IOB_23b         21    # Diff: COMP_22a
+#//#else
+#set_io --warn-no-port data_out[1]             21    #Again, just temp testing - 12MHz input on pin 35
+#//#endif
+
+#set_io --warn-no-port SPI_VCCIO1      22
+set_io --warn-no-port fifo_wri        23    #IOT_37a         23    # Diff: TRUE of IOT_36b
+#set_io --warn-no-port VPP_2V5         24
+
+
+
+
+
+#######################
+# RHS: Pins 25 - 36
+#
+set_io --warn-no-port fifo_txe        25    #IOT_36b         25    # Diff: COMP of IOT_37a
+set_io --warn-no-port data_out[7]     26    #IOT_39a         26    # Diff: TRUE of IOT_38b
+set_io --warn-no-port data_out[6]     27    #IOT_38b         27    # Diff: COMP of IOT_39a
+set_io --warn-no-port data_out[5]     28    #IOT_41a         28
+#set_io --warn-no-port VCCPLL          29
+#set_io --warn-no-port VCC             30
+set_io --warn-no-port data_out[4]     31    #IOT_42b         31    # Diff: COMP of IOT_43a
+set_io --warn-no-port data_out[3]     32    #IOT_43a         32    # Diff: TRUE of IOT_42b
+#set_io --warn-no-port VCCIO_0         33
+set_io --warn-no-port data_out[2]     34    #IOT_44b         34    # Diff: COMP of IOT_45a
+
+# TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
+#//#ifndef BUILD_FOR_UP5KBREAKOUT
+set_io --warn-no-port data_out[1]     35    #IOT_46b_G0      35    # G0
+#//#else
+#set_io --warn-no-port CLK             35    #TEMP: On EVB this is 12MHz input
+#//#endif
+
+set_io --warn-no-port data_out[0]     36    #IOT_48b         36    # Diff: COMP of IOT_49a
+
+
+
+
+
+
+#######################
+# Top: Pins 37 - 48
+#
+set_io --warn-no-port RST             37    #IOT_45a_G1      37    # G1 / Diff: TRUE of IOT_44b
+set_io --warn-no-port trig_in         38    #IOT_50b         38    # Diff: COMP of IOT_51a
+set_io --warn-no-port RGB0            39    # Blue (?)
+set_io --warn-no-port RGB1            40    # Green (?)
+set_io --warn-no-port RGB2            41    # Red (?)
+# re-purpose the next input as an input for b0 of the rx-delay 2 bit setting
+#set_io --warn-no-port read_mem_in     42    #IOT_51a         42    # Diff: TRUE of IOT_50b
+set_io --warn-no-port rx_delay_ctrl[0]     42    #IOT_51a         42    # Diff: TRUE of IOT_50b
+# re-purpose the next output as an input for b1 of the r-delay 2 bit setting
+#set_io --warn-no-port capt_done       43    #IOT_49a         43    # Diff: TRUE of IOT_48b
+set_io --warn-no-port rx_delay_ctrl[1]       43    #IOT_49a         43    # Diff: TRUE of IOT_48b
+set_io --warn-no-port data_in[0]      44    #IOB_3b_G6       44    # G6 / Diff: COMP of IOB_2a
+set_io --warn-no-port data_in[1]      45    #IOB_5b          45    # Diff: COMP of IOB_4a
+set_io --warn-no-port data_in[2]      46    #IOB_0a          46
+set_io --warn-no-port data_in[3]      47    #IOB_2a          47    # Diff: TRUE of IOB_3b
+set_io --warn-no-port data_in[4]      48    #IOB_4a          48    # Diff: TRUE of IOB_5b

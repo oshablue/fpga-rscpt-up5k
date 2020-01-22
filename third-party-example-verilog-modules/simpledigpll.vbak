@@ -1,0 +1,79 @@
+
+// http://computer-programming-forum.com/41-verilog/3d3f94aa31deadff.htm
+//
+//======================================================================
+
+module pll (clkin, clkout) ;
+
+input   clkin ;
+output  clkout ;
+
+parameter multiplier = 2 ;
+
+reg clkout ;
+reg debug ;
+real phase, p1, p2, t0, t1, t2, e1, e2 ;
+event phase_changed ;
+
+initial begin
+        phase = 1.0 ;
+        debug = 0 ;
+        end
+
+
+        // generate the new clock
+        clkout = 1'b1 ;
+        repeat (multiplier-1) begin
+                #phase clkout = 1'b0 ;
+                #phase clkout = 1'b1 ;
+                end
+        #phase clkout = 1'b0 ;
+        end
+
+// use forever if you have a changing input frequency
+
+
+        // phase = 1/2 period of new clk
+        // use two trial phases p1 and p2
+        // then calculate the corresponding errors e1 and e2
+        // then do linear fit to calculate a new phase
+
+        p1 = phase ;
+        p2 = 2.0 * p1 ;
+
+        fork
+        begin
+
+                t0 = $realtime ;
+                end
+        begin
+                repeat (multiplier) begin
+                        #p1 ;
+                        #p1 ;
+                        end
+                t1 = $realtime ;
+                end
+        begin
+                repeat (multiplier) begin
+                        #p2 ;
+                        #p2 ;
+                        end
+                t2 = $realtime ;
+                end
+        join
+
+        e1 = t1 - t0 ;
+        e2 = t2 - t0 ;
+
+        if (e1 != 0.0) begin
+                phase = p1 - (e1 * (p1 - p2) / (e1 - e2)) ;
+                -> phase_changed ;
+                end
+
+        if (debug) $display("%m error = %f for phase = %f", e1, p1) ;
+
+        end
+
+endmodule
+
+//======================================================================
