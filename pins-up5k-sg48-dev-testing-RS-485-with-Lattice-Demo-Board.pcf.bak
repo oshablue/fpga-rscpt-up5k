@@ -81,11 +81,11 @@
 
 
 #//
-#//#define BUILD_FOR_UP5KBREAKOUT
+#define BUILD_FOR_UP5KBREAKOUT
 #// See up5kbreakout-test version of pcf file for implemented ifdefs below already set
 
 #//
-#//#define USE_UART 1
+#define USE_UART 1
 #//
 
 
@@ -105,9 +105,9 @@ set_io --warn-no-port RTZ_NEG 10 #IOB_18a         10    # MCU_CTRL_RTZ_NEG in R0
 set_io --warn-no-port RTZ_POS 11 #IOB_20a         11    # MCU_CTRL_RTZ_POS in R01 A1 HDL-0108-RSCPT
 
 #ifdef USE_UART
-#set_io --warn-no-port UART_TX         12
+set_io --warn-no-port UART_TX         12
 #else
-set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
+#set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
 #end
 
 
@@ -117,9 +117,9 @@ set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
 #
 
 #ifdef USE_UART
-#set_io --warn-no-port UART_RX         13
+set_io --warn-no-port UART_RX         13
 #else
-set_io --warn-no-port IOB_24a         13    # Diff: TRUE of IOB_25b
+#set_io --warn-no-port IOB_24a         13    # Diff: TRUE of IOB_25b
 #end
 
 set_io --warn-no-port IOB_32a_SPI_SDO 14
@@ -131,16 +131,16 @@ set_io --warn-no-port IOB_29b         19
 
 # TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
 #ifndef BUILD_FOR_UP5KBREAKOUT
-set_io --warn-no-port CLK             20    #IOB_25b_G3      20    # G3 / Diff: COMP of IOB_24a
+#set_io --warn-no-port CLK             20    #IOB_25b_G3      20    # G3 / Diff: COMP of IOB_24a
 #else
-#set_io --warn-no-port RST             20     #IOB_25b_G3      20    # We had to move RST when using PLL and demo board as defined so far, couldn't be pin 37
+set_io --warn-no-port RST             20     #IOB_25b_G3      20    # We had to move RST when using PLL and demo board as defined so far, couldn't be pin 37
 #endif
 
 # TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
 #ifndef BUILD_FOR_UP5KBREAKOUT
-set_io --warn-no-port IOB_23b         21    # Diff: COMP_22a
+#set_io --warn-no-port IOB_23b         21    # Diff: COMP_22a
 #else
-#set_io --warn-no-port data_out[1]             21    #Again, just temp testing - 12MHz input on pin 35
+set_io --warn-no-port data_out[1]             21    #Again, just temp testing - 12MHz input on pin 35
 #endif
 
 #set_io --warn-no-port SPI_VCCIO1      22
@@ -167,9 +167,9 @@ set_io --warn-no-port data_out[2]     34    #IOT_44b         34    # Diff: COMP 
 
 # TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
 #ifndef BUILD_FOR_UP5KBREAKOUT
-set_io --warn-no-port data_out[1]     35    #IOT_46b_G0      35    # G0
+#set_io --warn-no-port data_out[1]     35    #IOT_46b_G0      35    # G0
 #else
-#set_io --warn-no-port CLK             35    #TEMP: On EVB this is 12MHz input
+set_io --warn-no-port CLK             35    #TEMP: On EVB this is 12MHz input
 #endif
 
 set_io --warn-no-port data_out[0]     36    #IOT_48b         36    # Diff: COMP of IOT_49a
@@ -184,7 +184,7 @@ set_io --warn-no-port data_out[0]     36    #IOT_48b         36    # Diff: COMP 
 #
 
 #ifndef BUILD_FOR_UP5KBREAKOUT
-set_io --warn-no-port RST             37    #IOT_45a_G1      37    # G1 / Diff: TRUE of IOT_44b
+#set_io --warn-no-port RST             37    #IOT_45a_G1      37    # G1 / Diff: TRUE of IOT_44b
 #else
 #end # Just don't use it - it conflicts with clock mapping right now using the lattice demo setup
 
