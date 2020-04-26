@@ -183,7 +183,8 @@ module top (
 
     wire clk_copy;
 
-
+    reg[7:0] seq_id;  // sequence ID for the frame
+    reg[7:0] seq_id_nxt;
 
 
 
@@ -222,8 +223,6 @@ module top (
     divide_by_n #(.N(2)) div160to80(clk160, 1'b0, SAMPLECLK);
     //divide_by_n #(.N(2)) divsclk(SAMPLECLK, 1'b0, sclk);
     divide_by_n #(.N(4)) divsclk(clk160, 1'b0, sclk);
-
-    // SAMPLE ADC at 40MHz
     assign adc_encode = (sclk);
 
 
@@ -290,7 +289,7 @@ module top (
     always @( posedge SAMPLECLK )
     begin
       if ( trigd | !new_capt ) begin
-        dumpclkreg <= `EXT_FIFO_WR_IDLE; // EXT_FIF)_WR_IDLE is = 1 thus //1'b 0;
+        dumpclkreg <= `EXT_FIFO_WR_IDLE; //1'b 0;
       end
       if ( dumpclkedges & new_capt ) begin
         dumpclkreg <= ~dumpclkreg;
@@ -860,8 +859,6 @@ module top (
     );
 
 
-
-
   `ifdef SELFREAD
     wire trigd_rise, trigd_fall;
     edge_detect edet_trigd (
@@ -871,8 +868,6 @@ module top (
         .fall       (trigd_fall)
     );
   `endif
-
-
 
 
   `ifndef SELFREAD
@@ -941,12 +936,6 @@ module top (
   `endif
 
 
-
-
-    //
-    // SYNC trig_in
-    //
-    // NOTE: currently sclk is 40MHz
     // https://electronics.stackexchange.com/questions/26502/verilog-check-for-two-negedges-in-always-block
     wire trig_in_fall;
     edge_detect edet_trig_in (
@@ -959,26 +948,20 @@ module top (
 
 
 
-    // READ address increment/reset
-    // DELETED - TESTING 04-26-2020 -- latches created without the identity?  Or because of it?
-    // NOPE: Doing this basically kills data output
+
     always @( posedge SAMPLECLK )
     begin
       if ( trig_in_rise ) begin
         addr_rd_nxt <= 12'b 0000_0000_0000;
-      end //else begin
-      //  addr_rd_nxt <= addr_rd_nxt;
-      //end
+      end
       if ( read_mem_rise ) begin
         addr_rd_nxt <= (addr_rd + 1'b 1);
-      end //else begin
-      //  addr_rd_nxt <= addr_rd_nxt;
-      //end
+      end
     end
 
 
 
-    // new_capt Management
+
   `ifdef SELFREAD
     always @( posedge SAMPLECLK )
     begin
@@ -999,7 +982,7 @@ module top (
 
 
 
-  // WRITE address increment/reset
+
     always @( posedge SAMPLECLK )
     begin
       if ( trig_in_rise ) begin
@@ -1043,8 +1026,7 @@ module top (
       sof[11] <= 8'h 00;
     end
 
-    reg[7:0] seq_id;  // sequence ID for the frame
-    reg[7:0] seq_id_nxt;
+
 
     /*
     always @( posedge sclk )
@@ -1082,23 +1064,10 @@ module top (
         //mem[addr_wr] <= data_in;      // To test correct sequencing: <= addr_wr[7:0] etc.
       end
 
-      // Moving addr_rd into the next seq_reset related if-else allows real WF data
-      // but does not change that at least one 8x extra per file found
-
-      if ( read_mem_fall ) begin     //) read_mem & new_capt ) begin // was just read_mem
+      if ( read_mem ) begin
         if ( addr_rd == 4 ) begin
           addr_rd <= addr_rd_nxt;
-          //if ( seq_reset ) begin      // DELETED - see above - TESTING 04-26-2020 adding seq_reset here - never a chan 8x extra - but all WF data = 0x00 too ...
-          //  addr_rd <= addr_rd_nxt;
-          //  seq_id <= 8'h 00;
-          //end else begin
-          //  addr_rd <= addr_rd_nxt;
-          if ( seq_reset_pending ) begin
-            seq_id <= 8'h 00;
-          end else begin
-            seq_id <= seq_id + 1; // seq_id_nxt;
-          end
-          //end
+          seq_id <= seq_id_nxt;
           val <= seq_id;
         end else if ( addr_rd < 12 ) begin
           addr_rd <= addr_rd_nxt;
@@ -1131,151 +1100,15 @@ module top (
     // Sync reset - we use this because two conditions can drive into seq_id_nxt
     wire n_reset;
     assign n_reset = RST; // not using directly to allow a spot to interject an updated functionality
-    reg seq_reset_pending;
     //always @ ( posedge SAMPLECLK or negedge n_reset)  // Async
     // Thus: some hold time is required for the RST line external drive, but not much
-
-    wire n_reset_fall;
-    wire n_reset_rise;
-    edge_detect edet_n_reset (
-      .async_sig  (n_reset),
-      .clk        (SAMPLECLK), //sclk //(clk_copy), // so far SAMPLECLK is best
-      .rise       (n_reset_rise),
-      .fall       (n_reset_fall)
-    );
-
-
-
-
-
-    wire debounced_seq_reset;
-    wire seq_reset;
-    assign seq_reset = !n_reset;    // Converting to an active high signal
-    debouncing n_reset_debounce (
-        .clock    (SAMPLECLK),
-        .reset    (1'b 0),
-        .button   (seq_reset),
-        .out      (debounced_seq_reset)
-        );
-
-
-
-
-
-    wire seq_reset_rise;
-    wire seq_reset_fall;
-    edge_detect edet_seq_reset (
-      .async_sig  (seq_reset),
-      .clk        (SAMPLECLK),
-      .rise       (seq_reset_rise),
-      .fall       (seq_reset_fall)
-    );
-
-
-
-
-    // DELETED - TESTING 04-26-2020 - Testing combinatorial formulation and with = below
-    // NOPE: This does the same to keep all real samples at 0x00, though never a chan 8x
     always @ ( posedge SAMPLECLK )
     begin
-
-
-      // As of this moment TESTING 04-26-2020 this, below with the corresponding code in the
-      // read mem always block above is the most reliable
-      // So far: No 8x chans mults, and stable WF data so far anyway
-      // TODO test real data on Chans to check for actual channel scanning
-      // Also couples with the MCU code at the moment that always sets the n_reset
-      // high at each trig, that is, after the trig has happened (so that n_reset
-      // is low during a trig cycle if this is a new channel cycle) -- however
-      // That breaks the first capture -- so we will try with updated MCU code
-      // To indeed just drop n_reset after the trig cycle, and set it high at the
-      // beginning again
-      if ( seq_reset_rise ) begin // this is an active high version of the signal
-        seq_reset_pending <= 1'b 1;
-      end else if ( seq_id == 8'h 00 ) begin
-        seq_reset_pending <= 1'b 0;
-      end
-
-
-
-      //if ( n_reset == 1'b 0 ) begin // if !RST (active low)
-      //  seq_id_nxt <= 8'h 00;
-      // Yes, the formulation below matters in close timing conditions
-      // In testing, so far, this formulation along with the MCU
-      // timing of the RST signal provides more reliable channel reset sequence control
-      // The last eval and assignment wins
-      /*if ( n_reset == 1'b 1) begin
-        if ( trig_in_rise ) begin
-          seq_id_nxt <= seq_id + 1;
-        end
-      end else if ( n_reset == 1'b 0) begin
-        seq_id_nxt <= 8'h 00;
-        //seq_id <= 8'h 00; // can't do this ... dup input
-      end*/
-
-
-      // With this still get chan creep once in a while
-      // And with using trig_in_rise too - which so far has been the best
-      // but not perfect yet
-      // Maybe try a debounce / delay?
-      // What about: if ( n_reset_fall ) begin ?
-      // NOPE: Using n_reset_fall - still get every couple thousand wfs a creep in of an extra 8x sequence
-      // However, this last time, it was after starting capture - so it could be an MCU timing artifact - right at start of second file only place
-      // Repeating: Happens again, just once, ~ sample # 20k
-      // What about: if ( n_reset_rise ) begin ? Trying to reset seq count right before next capt trig_in from MCU, trying to be sure that read_mem is done
-      // This assumes however that there is no overlap in read_mem completion with start of next trig cycle on MCU - so may not scale at slower read clock speeds
-      // NOPE: Somehow that allows in lots of channel 8x's ... why? Oh because seq_id still holds the last number and thus is incremented at the next trig_in
-      // What about if: On MCU now keep the reset signal low all the way through the channel 0 trig_in cycle
-      // There is clearly a rework of all of this that could be cleaner at a next major revision
-      // So then we would use not the edge pulse but just the value
-      // So, trying, even the active high signal: if ( seq_reset ) along with the updated MCU code
-      // This only could maybe work if we're not using a reset pulse from the MCU for anything else - which at the moment we are not - so may not scale to other options well
-      // NOPE: We still get eg in file #2 one 8x extra seq
-      //
-      /*
-      if ( seq_reset ) begin
-        seq_id_nxt <= 8'h 00; // was <=
-      // trig_in_rise best yet -- below leaves out a cycle of reset/chan scan - thus 08 - 0f or similar
-      end else if ( trig_in_rise ) begin //or could try one of the trigd_fall/rise? // best so far but not perfect allows one or so Ch 8 every once in a while, was trig_in_rise
-        seq_id_nxt <= seq_id + 1; // was <=
-      end
-      */
-
-
-      // Or the updated variant:
-      // NOPE: Let's a whole 8x chan sequence in every once in a while
-      /*
-      if ( !n_reset_fall) begin
-        if ( trig_in_rise ) begin
-          seq_id_nxt <= seq_id + 1;
-        end
-      end else begin  // was if ( n_reset_fall ) begin
-        seq_id_nxt <= 8'h 00;
-      end
-      */
-
-
-      // Or trying debounced active high signal
-      /*
-      if ( !seq_reset_rise ) begin
-        if ( trig_in_rise ) begin
-          seq_id_nxt <= seq_id + 1;
-        end
-      end else begin
-        seq_id_nxt <= 8'h 00;
-      end
-      */
-
-
-
-
-      // Old early method:
-      /*if ( n_reset == 1'b 0) begin
+      if ( n_reset == 1'b 0 ) begin // if !RST (active low)
         seq_id_nxt <= 8'h 00;
       end else if ( trig_in_rise ) begin
-          seq_id_nxt <= seq_id + 1;
-      end*/
-
+        seq_id_nxt <= seq_id + 1;
+      end
     end
 
 
@@ -1530,121 +1363,5 @@ always @ (posedge clk) begin
 end
 
 assign data_out = holding_register[DEPTH-1];
-
-endmodule
-
-
-
-
-
-// Seems to debounce input delaying for about 4 count cycles until high
-// and then low for about 4 counts gives the low output
-// So, it lasts about the input pulse duration
-// However, edges are delayed by about 4 counts
-// Count length is determined by N
-// If input clock is 80 MHz then a count of 19 (default) => 2^18 = 262144 = 3ms (very long) or maybe x2
-// We might use something very short like N = 1:0 => 2^2 (possibly 2 since it rolls over and this might be a half count trig)
-// = 50 ns or maybe 100 ns
-//
-// https://simplefpga.blogspot.com/2012/07/simple-debouncing-code-in-verilog.html
-module debouncing(
-    input clock,
-    input reset,
-    input button,
-    output reg out
-    );
-
-localparam N = 19;        //for a 10ms tick
-
-reg [N-1:0]count;
-wire tick;
-
-
-// the counter that will generate the tick.
-
-always @ (posedge clock or posedge reset)
-    begin
-        if(reset)
-            count <= 0;
-        else
-            count <= count + 1;
-    end
-
-assign tick = &count;        //AND every bit of count with itself. Tick will only go high when all 19 bits of count are 1, i.e. after 10ms
-
-// now for the debouncing FSM
-
-localparam[2:0]                     //defining the various states to be used
-zero = 3'b000,
-high1 = 3'b001,
-high2 = 3'b010,
-high3 = 3'b011,
-one = 3'b100,
-low1 = 3'b101,
-low2 = 3'b110,
-low3 = 3'b111;
-
-reg [2:0]state_reg;
-reg [2:0]state_next;
-
-always @ (posedge clock or posedge reset)
-    begin
-        if (reset)
-            state_reg <= zero;
-        else
-            state_reg <= state_next;
-    end
-
-
-always @ (*)
-    begin
-        state_next <= state_reg;  // to make the current state the default state
-        out <= 1'b0;                    // default output low
-
-        case(state_reg)
-            zero:
-                if (button)                    //if button is detected go to next state high1
-                    state_next <= high1;
-            high1:
-                if (~button)                //while here if button goes back to zero then input is not yet stable and go back to state zero
-                    state_next <= zero;
-                else if (tick)                //but if button remains high even after 10 ms, go to next state high2.
-                    state_next <= high2;
-            high2:
-                if (~button)                //while here if button goes back to zero then input is not yet stable and go back to state zero
-                    state_next <= zero;
-                else if (tick)                //else if after 20ms (10ms + 10ms) button is still high go to high3
-                    state_next <= high3;
-            high3:
-                if (~button)                //while here if button goes back to zero then input is not yet stable and go back to state zero
-                    state_next <= zero;
-                else if (tick)                //and finally even after 30 ms input stays high then it is stable enough to be considered a valid input, go to state one
-                    state_next <= one;
-
-            one:                                //debouncing eliminated make output high, now here I'll check for bouncing when button is released
-                begin
-                    out <= 1'b1;
-                        if (~button)        //if button appears to be released go to next state low1
-                            state_next <=  low1;
-                end
-            low1:
-                if (button)                //while here if button goes back to high then input is not yet stable and go back to state one
-                    state_next <= one;
-                else if (tick)            //else if after 10ms it is still high go to next state low2
-                    state_next <= low2;
-            low2:
-                if (button)                //while here if button goes back to high then input is not yet stable and go back to state one
-                    state_next <= one;
-                else if (tick)            //else if after 20ms it is still high go to next state low3
-                    state_next <= low3;
-            low3:
-                if (button)                //while here if button goes back to high then input is not yet stable and go back to state one
-                    state_next <= one;
-                else if (tick)            //after 30 ms if button is low it has actually been released and bouncing eliminated, go back to zero state to wait for next input.
-                    state_next <= zero;
-            default state_next <= zero;
-
-        endcase
-    end
 
 endmodule

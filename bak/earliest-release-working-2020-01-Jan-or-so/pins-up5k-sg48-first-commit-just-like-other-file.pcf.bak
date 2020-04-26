@@ -92,12 +92,12 @@ set_io --warn-no-port data_in[6]      3     #IOB_9b          3     # Diff: COMP 
 set_io --warn-no-port data_in[7]      4     #IOB_8a          4     # Diff: TRUE of IOB_9b
 #set_io --warn-no-port VCC             5
 set_io --warn-no-port adc_encode      6     #IOB_13b         6     # Diff: COMP of IOB_12a
-#set_io --warn-no-port CDONE           7
+set_io --warn-no-port CDONE           7
 #set_io --warn-no-port CRESET_B        8     # CRESET_B is always only itself
 set_io --warn-no-port PULSE_NEG 9 #IOB_16a         9     # MCU_CTRL_PULSE_NEG
 set_io --warn-no-port RTZ_NEG 10 #IOB_18a         10    # MCU_CTRL_RTZ_NEG in R01 A1 HDL-0108-RSCPT
 set_io --warn-no-port RTZ_POS 11 #IOB_20a         11    # MCU_CTRL_RTZ_POS in R01 A1 HDL-0108-RSCPT
-#set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
+set_io --warn-no-port IOB_22a         12    # Diff: TRUE of IOB_23b
 
 
 
@@ -105,13 +105,13 @@ set_io --warn-no-port RTZ_POS 11 #IOB_20a         11    # MCU_CTRL_RTZ_POS in R0
 #######################
 # Bottom: Pins 13 - 24
 #
-#set_io --warn-no-port IOB_24a         13    # Diff: TRUE of IOB_25b
-#set_io --warn-no-port IOB_32a_SPI_SDO 14
-#set_io --warn-no-port IOB_34a_SPI_SCK 15
-#set_io --warn-no-port IOB_35b_SPI_SS  16
-#set_io --warn-no-port IOB_33b_SPI_SDI 17
-#set_io --warn-no-port IOB_31b         18
-#set_io --warn-no-port IOB_29b         19
+set_io --warn-no-port IOB_24a         13    # Diff: TRUE of IOB_25b
+set_io --warn-no-port IOB_32a_SPI_SDO 14
+set_io --warn-no-port IOB_34a_SPI_SCK 15
+set_io --warn-no-port IOB_35b_SPI_SS  16
+set_io --warn-no-port IOB_33b_SPI_SDI 17
+set_io --warn-no-port IOB_31b         18
+set_io --warn-no-port IOB_29b         19
 
 # TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
 #//#ifndef BUILD_FOR_UP5KBREAKOUT
@@ -122,8 +122,7 @@ set_io --warn-no-port CLK             20    #IOB_25b_G3      20    # G3 / Diff: 
 
 # TEMP PIN SWAP FOR TESTING PLL WITH LIVE CLOCK ON UP5K BREAKOUT BOARD
 #//#ifndef BUILD_FOR_UP5KBREAKOUT
-# We don't use this:
-#set_io --warn-no-port IOB_23b         21    # Diff: COMP_22a
+set_io --warn-no-port IOB_23b         21    # Diff: COMP_22a
 #//#else
 #set_io --warn-no-port data_out[1]             21    #Again, just temp testing - 12MHz input on pin 35
 #//#endif
@@ -169,9 +168,9 @@ set_io --warn-no-port data_out[0]     36    #IOT_48b         36    # Diff: COMP 
 #
 set_io --warn-no-port RST             37    #IOT_45a_G1      37    # G1 / Diff: TRUE of IOT_44b
 set_io --warn-no-port trig_in         38    #IOT_50b         38    # Diff: COMP of IOT_51a
-#set_io --warn-no-port RGB0            39    # Blue (?)
-#set_io --warn-no-port RGB1            40    # Green (?)
-#set_io --warn-no-port RGB2            41    # Red (?)
+set_io --warn-no-port RGB0            39    # Blue (?)
+set_io --warn-no-port RGB1            40    # Green (?)
+set_io --warn-no-port RGB2            41    # Red (?)
 # re-purpose the next input as an input for b0 of the rx-delay 2 bit setting
 #set_io --warn-no-port read_mem_in     42    #IOT_51a         42    # Diff: TRUE of IOT_50b
 set_io --warn-no-port rx_delay_ctrl[0]     42    #IOT_51a         42    # Diff: TRUE of IOT_50b
